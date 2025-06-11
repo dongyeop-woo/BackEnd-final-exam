@@ -1,7 +1,7 @@
 package com.book.book.controller;
 
 import com.book.book.entity.User;
-import com.book.book.service.UserServiceImpl;
+import com.book.book.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -13,12 +13,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserServiceImpl userServiceImpl;
+    private final UserService userService;
 
     @PostMapping("/login")
     public String login(@RequestParam String username, @RequestParam String password, HttpSession session, RedirectAttributes redirectAttributes) {
         try {
-            User user = userServiceImpl.login(username, password);
+            User user = userService.login(username, password);
             session.setAttribute("user", user);
             return "redirect:/";
         } catch (RuntimeException e) {
@@ -28,17 +28,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestParam String username, @RequestParam String password, @RequestParam String email, @RequestParam String firstName, @RequestParam String lastName, RedirectAttributes redirectAttributes) {
+    public String register(User user, RedirectAttributes redirectAttributes) {
         try {
-            User user = User.builder()
-                    .username(username)
-                    .password(password)
-                    .email(email)
-                    .firstName(firstName)
-                    .lastName(lastName)
-                    .build();
-            userServiceImpl.register(user);
-            redirectAttributes.addFlashAttribute("success", "회원가입이 완료");
+            userService.register(user);
+            redirectAttributes.addFlashAttribute("success", "회원가입 완료");
             return "redirect:/login";
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

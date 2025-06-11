@@ -17,8 +17,7 @@ public class StoreController {
 
     @PostMapping
     public ResponseEntity<Book> create(@RequestBody Book book) {
-        Book savedBook = storeService.setBook(book);
-        return ResponseEntity.ok(savedBook);
+        return ResponseEntity.ok(storeService.setBook(book));
     }
 
     @GetMapping

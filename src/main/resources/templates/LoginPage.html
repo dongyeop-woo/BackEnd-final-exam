@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -143,10 +145,10 @@
     <div class="login-container">
         <div class="login-box">
             <h1 class="login-title">로그인</h1>
-            <div th:if="${error}" class="error-message show" th:text="${error}">
-                로그인 오류가 발생했습니다.
+            <div th:if="${param.error}" class="error-message">
+                아이디 또는 비밀번호가 올바르지 않습니다.
             </div>
-            <form action="/login" method="post">
+            <form th:action="@{/login}" method="post">
                 <div class="form-group">
                     <label for="username">아이디</label>
                     <input type="text" id="username" name="username" required>

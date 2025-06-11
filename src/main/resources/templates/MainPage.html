@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -401,16 +402,20 @@
             </ul>
         </div>
         <div class="nav-right">
-            <form action="/books/search" method="get" class="search-box">
-                <input type="text" name="keyword" class="search-input" placeholder="도서 검색...">
-            </form>
-            <div class="auth-buttons" th:if="${session.user == null}">
+            <div class="search-box">
+                <form th:action="@{/books/search}" method="get">
+                    <input type="text" name="keyword" class="search-input" placeholder="도서 검색...">
+                </form>
+            </div>
+            <div class="auth-buttons" sec:authorize="!isAuthenticated()">
                 <a href="/login" class="login-btn">로그인</a>
                 <a href="/register" class="register-btn">회원가입</a>
             </div>
-            <div class="profile-section" th:if="${session.user != null}">
-                <div class="user-avatar" th:text="${#strings.substring(session.user.username,0,1).toUpperCase()}">U</div>
-                <form action="/logout" method="post" style="margin: 0;">
+            <div class="profile-section" sec:authorize="isAuthenticated()">
+                <div class="user-avatar">
+                    <span sec:authentication="name">User</span>
+                </div>
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
                     <button type="submit" class="logout-btn">로그아웃</button>
                 </form>
             </div>

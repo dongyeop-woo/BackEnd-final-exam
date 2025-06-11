@@ -6,5 +6,14 @@ import java.util.List;
 
 public interface StoreService {
     List<Book> findAll();
+
     Book setBook(Book book);
+    
+    List<Book> findBestsellerBooks();
+    
+    List<String> findAllCategories();
+    
+    List<Book> findBooksByCategory(String category);
+    
+    List<Book> searchBooks(String keyword);
 }

@@ -20,3 +20,17 @@ spring:
     init:
       mode: always
       encoding: UTF-8
+
+  security:
+    filter:
+      order: 10
+
+  thymeleaf:
+    cache: false
+    check-template-location: true
+    prefix: classpath:/templates/
+    suffix: .html
+    enabled: true
+
+jwt:
+  expiration: 86400000
