@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검색 결과 - BookHaven</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2d5a3d;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #2d5a3d;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .auth-buttons a {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+
+        .login-btn {
+            color: #2d5a3d;
+            border: 1px solid #2d5a3d;
+        }
+
+        .register-btn {
+            background: #2d5a3d;
+            color: white;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            color: #666;
+            border: 1px solid #666;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .search-header {
+            margin-bottom: 2rem;
+        }
+
+        .search-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-count {
+            color: #666;
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .book-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .book-cover {
+            height: 280px;
+            background-size: cover;
+            background-position: center;
+            background-color: #f0f0f0;
+        }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .book-info {
+            padding: 1rem;
+        }
+
+        .book-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .book-author {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .book-category {
+            font-size: 0.8rem;
+            color: #2d5a3d;
+            background: #e8f5e9;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-left">
+                <a href="/main" class="logo">BookHaven</a>
+                <ul class="nav-menu">
+                    <li><a href="/main">홈</a></li>
+                    <li><a href="/books/bestseller">베스트셀러</a></li>
+                    <li><a href="/books/category">장르별</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <div class="auth-buttons" th:if="${session.user == null}">
+                    <a href="/login" class="login-btn">로그인</a>
+                    <a href="/register" class="register-btn">회원가입</a>
+                </div>
+                <div class="profile-section" th:if="${session.user != null}">
+                    <div class="user-avatar" th:text="${#strings.substring(session.user.username,0,1).toUpperCase()}">U</div>
+                    <form action="/logout" method="post" style="margin: 0;">
+                        <button type="submit" class="logout-btn">로그아웃</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="search-header">
+            <h1 class="search-title">"<span th:text="${keyword}">검색어</span>" 검색 결과</h1>
+            <p class="search-count">총 <span th:text="${books != null ? books.size() : 0}">0</span>건의 검색결과</p>
+        </div>
+
+        <div th:if="${books != null and !books.empty}" class="book-grid">
+            <div th:each="book : ${books}" class="book-card">
+                <div class="book-cover">
+                    <img th:src="${book.imageUrl}" th:alt="${book.name}">
+                </div>
+                <div class="book-info">
+                    <h3 class="book-title" th:text="${book.name}">책 제목</h3>
+                    <p class="book-author" th:text="${book.author}">저자</p>
+                    <span class="book-category" th:text="${book.category}">카테고리</span>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${books == null or books.empty}" class="no-results">
+            <h2>검색 결과가 없습니다</h2>
+            <p>다른 검색어로 다시 시도해보세요.</p>
+        </div>
+    </div>
+</body>
+</html> 
