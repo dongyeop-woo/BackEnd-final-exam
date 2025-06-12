@@ -1,7 +1,3 @@
--- 테스트용 사용자 데이터
-INSERT INTO user (username, password, email, first_name, last_name) VALUES
-('test', 'test123', 'test@example.com', '테스트', '사용자');
-
 -- 베스트셀러 도서 데이터
 INSERT INTO book (name, author, category, book_best, image_url) VALUES
 ('침묵의 봄', '레이첼 카슨', 'ENVIRONMENT', 'YES', 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788962632729.jpg'),
