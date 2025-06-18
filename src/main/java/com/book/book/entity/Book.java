@@ -3,6 +3,7 @@ package com.book.book.entity;
 import com.book.book.enums.BookBest;
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -21,4 +22,7 @@ public class Book {
 
     @Enumerated(EnumType.STRING)
     private BookBest bookBest;
+
+    @ManyToMany(mappedBy = "favorites")
+    private Set<User> likedBy;
 }
