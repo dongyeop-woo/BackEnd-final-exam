@@ -1,6 +1,8 @@
 package com.book.book.service;
 
+import com.book.book.dto.BookDTO;
 import com.book.book.entity.Book;
+import com.book.book.mapper.BookMapper;
 import com.book.book.repository.StoreRepository;
 import com.book.book.enums.BookBest;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
+    private final BookMapper bookMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -24,15 +27,9 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional
-    public Book setBook(Book book) {
-        return storeRepository.save(
-                Book.builder()
-                        .name(book.getName())
-                        .author(book.getAuthor())
-                        .category(book.getCategory())
-                        .bookBest(book.getBookBest())
-                        .build()
-        );
+    public Book setBook(BookDTO bookDTO) {
+        Book newBook = bookMapper.toEntity(bookDTO);
+        return storeRepository.save(newBook);
     }
 
     @Override
