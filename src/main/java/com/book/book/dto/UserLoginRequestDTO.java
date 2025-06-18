@@ -1,18 +1,15 @@
 package com.book.book.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @NoArgsConstructor
-public class UserLoginRequest {
+@AllArgsConstructor
+public class UserLoginRequestDTO {
     private String username;
     private String password;
-
-    @Builder
-    public UserLoginRequest(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
 }
