@@ -1,56 +1,67 @@
 package com.book.book.controller;
 
+import com.book.book.dto.UserLoginRequestDTO;
+import com.book.book.dto.UserRegisterRequestDTO;
 import com.book.book.entity.User;
+import com.book.book.exception.LoginNeedException;
+import com.book.book.exception.UserAlreadyException;
+import com.book.book.mapper.UserMapper;
 import com.book.book.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.net.URI;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
+    // 로그인
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String username, 
-                                 @RequestParam String password, 
-                                 HttpSession session) {
-        try {
-            User user = userService.login(username, password);
-            session.setAttribute("user", user);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> login(@RequestBody UserLoginRequestDTO request, @ModelAttribute HttpSession session) {
+        User user = userService.login(request.getUsername(), request.getPassword());
+        session.setAttribute("user", user);
+        return ResponseEntity.ok().build();
     }
 
+    // 회원가입 및 중복 검증
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestParam String username, @RequestParam String password, @RequestParam String email, @RequestParam String firstName, @RequestParam String lastName) {
+    public ResponseEntity<?> register(@RequestBody UserRegisterRequestDTO requestDTO) {
         try {
-            User user = User.builder()
-                    .username(username)
-                    .password(password)
-                    .email(email)
-                    .firstName(firstName)
-                    .lastName(lastName)
-                    .build();
-            userService.register(user);
-            return ResponseEntity.created(URI.create("/login")).build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            User savedUser = userService.register(requestDTO);
+            UserRegisterRequestDTO request = userMapper.toDTO(savedUser);
+            return ResponseEntity.ok(request);
+         }catch (DataIntegrityViolationException e) {
+            throw new UserAlreadyException();
         }
     }
 
+    // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
         session.invalidate();
         return ResponseEntity.ok().build();
     }
-} 
+
+    // 책 목록 전달
+    @PostMapping("/books/{id}/favorite")
+    @ResponseBody
+    public ResponseEntity<?> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new LoginNeedException();
+        }
+        userService.toggleFavorite(userDetails.getUsername(), id);
+        return ResponseEntity.ok().build();
+    }
+}
