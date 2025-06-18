@@ -22,10 +22,14 @@
             flex-direction: column;
         }
 
+        /* Header */
         .header {
             background: white;
             padding: 1rem 2rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .nav {
@@ -36,11 +40,91 @@
             margin: 0 auto;
         }
 
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
         .logo {
             font-size: 1.5rem;
             font-weight: bold;
             color: #2d5a3d;
             text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #2d5a3d;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .auth-buttons a {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .login-btn {
+            color: #2d5a3d;
+            border: 1px solid #2d5a3d;
+        }
+
+        .login-btn:hover {
+            background: #f0f8f1;
+        }
+
+        .register-btn {
+            background: #2d5a3d;
+            color: white;
+        }
+
+        .register-btn:hover {
+            background: #1f4229;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: #2d5a3d;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background: #1f4229;
+            color: #fff;
         }
 
         .login-container {
@@ -138,17 +222,39 @@
 <body>
     <header class="header">
         <nav class="nav">
-            <a href="/" class="logo">BookHaven</a>
+            <div class="nav-left">
+                <a href="/main" class="logo">BookHaven</a>
+                <ul class="nav-menu">
+                    <li><a href="/main">홈</a></li>
+                    <li><a href="/books/bestseller">베스트셀러</a></li>
+                    <li><a href="/books/category">장르별</a></li>
+                    <li><a href="/favorites">찜 목록</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <div class="auth-buttons" sec:authorize="!isAuthenticated()">
+                    <a href="/login" class="login-btn">로그인</a>
+                    <a href="/register" class="register-btn">회원가입</a>
+                </div>
+                <div class="profile-section" sec:authorize="isAuthenticated()">
+                    <div class="user-info">
+                        <span class="username" sec:authentication="name">사용자</span>
+                    </div>
+                    <form th:action="@{/logout}" method="post" style="margin: 0;">
+                        <button type="submit" class="logout-btn">로그아웃</button>
+                    </form>
+                </div>
+            </div>
         </nav>
     </header>
 
     <div class="login-container">
         <div class="login-box">
             <h1 class="login-title">로그인</h1>
-            <div th:if="${param.error}" class="error-message">
+            <div th:if="${param.error}" class="error-message show">
                 아이디 또는 비밀번호가 올바르지 않습니다.
             </div>
-            <form th:action="@{/login}" method="post">
+            <form action="/login-process" method="post">
                 <div class="form-group">
                     <label for="username">아이디</label>
                     <input type="text" id="username" name="username" required>

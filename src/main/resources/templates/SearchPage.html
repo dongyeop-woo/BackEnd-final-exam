@@ -22,6 +22,9 @@
             background: white;
             padding: 1rem 2rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .nav {
@@ -91,17 +94,18 @@
         }
 
         .logout-btn {
+            background: #2d5a3d;
+            color: white;
             text-decoration: none;
             padding: 0.5rem 1rem;
             border-radius: 4px;
-            color: #666;
-            border: 1px solid #666;
+            border: none;
             transition: all 0.3s;
+            cursor: pointer;
         }
-
         .logout-btn:hover {
-            background: #f0f0f0;
-            color: #333;
+            background: #1f4229;
+            color: #fff;
         }
 
         .container {
@@ -126,26 +130,35 @@
 
         .book-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 2rem;
+            margin-bottom: 4rem;
         }
 
         .book-card {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            width: 100%;
+            min-width: 250px;
+            max-width: 300px;
+            justify-self: center;
         }
 
         .book-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
 
         .book-cover {
-            height: 280px;
+            width: 100%;
+            height: 300px;
             background-size: cover;
             background-position: center;
+            position: relative;
             background-color: #f0f0f0;
         }
 
@@ -156,28 +169,63 @@
         }
 
         .book-info {
-            padding: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .book-info-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
         }
 
         .book-title {
             font-size: 1.1rem;
-            margin-bottom: 0.5rem;
+            font-weight: bold;
             color: #333;
+            margin: 0;
         }
 
         .book-author {
-            font-size: 0.9rem;
             color: #666;
-            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            margin: 0;
         }
 
         .book-category {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: #2d5a3d;
             background: #e8f5e9;
-            padding: 0.2rem 0.5rem;
+            padding: 0.2rem 0.7rem;
             border-radius: 4px;
             display: inline-block;
+            margin: 0;
+        }
+
+        .favorite-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #bbb;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            margin-left: 1rem;
+        }
+
+        .favorite-btn:hover {
+            color: #e74c3c;
+            border-color: #e74c3c;
+            box-shadow: 0 4px 16px rgba(231,76,60,0.10);
+            transform: scale(1.12);
         }
 
         .no-results {
@@ -215,6 +263,25 @@
         .search-input::placeholder {
             color: #999;
         }
+
+        @media (max-width: 1200px) {
+            .book-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 900px) {
+            .book-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 600px) {
+            .book-grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+            .book-card {
+                max-width: 280px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -226,12 +293,14 @@
                     <li><a href="/main">홈</a></li>
                     <li><a href="/books/bestseller">베스트셀러</a></li>
                     <li><a href="/books/category">장르별</a></li>
+                    <li><a href="/favorites">찜 목록</a></li>
                 </ul>
             </div>
             <div class="nav-right">
                 <div class="search-box">
                     <form th:action="@{/books/search}" method="get">
-                        <input type="text" name="keyword" class="search-input" placeholder="도서 검색...">
+                        <input type="text" name="keyword" class="search-input" placeholder="도서 검색..." required>
+                        <button type="submit" style="display: none;">검색</button>
                     </form>
                 </div>
                 <div class="auth-buttons" sec:authorize="!isAuthenticated()">
@@ -239,8 +308,8 @@
                     <a href="/register" class="register-btn">회원가입</a>
                 </div>
                 <div class="profile-section" sec:authorize="isAuthenticated()">
-                    <div class="user-avatar">
-                        <span sec:authentication="name">User</span>
+                    <div class="user-info">
+                        <span class="username" sec:authentication="name">사용자</span>
                     </div>
                     <form th:action="@{/logout}" method="post" style="margin: 0;">
                         <button type="submit" class="logout-btn">로그아웃</button>
@@ -257,14 +326,15 @@
         </div>
 
         <div th:if="${books != null and !books.empty}" class="book-grid">
-            <div th:each="book : ${books}" class="book-card">
-                <div class="book-cover">
-                    <img th:src="${book.imageUrl}" th:alt="${book.name}">
-                </div>
+            <div th:each="book : ${books}" class="book-card" th:onclick="|window.location.href='/books/' + [[${book.id}]]|" style="cursor:pointer;">
+                <div class="book-cover" th:style="'background-image: url(' + ${book.imageUrl} + ')'"></div>
                 <div class="book-info">
+                    <div class="book-info-content">
                     <h3 class="book-title" th:text="${book.name}">책 제목</h3>
                     <p class="book-author" th:text="${book.author}">저자</p>
-                    <span class="book-category" th:text="${book.category}">카테고리</span>
+                        <p class="book-category" th:text="${book.category}">카테고리</p>
+                    </div>
+                    <button type="button" class="favorite-btn" th:onclick="|handleFavorite([[${book.id}]])|" aria-label="찜하기">♡</button>
                 </div>
             </div>
         </div>
@@ -272,6 +342,45 @@
         <div th:if="${books == null or books.empty}" class="no-results">
             <h2>검색 결과가 없습니다</h2>
             <p>다른 검색어로 다시 시도해보세요.</p>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        window.userLoggedIn = [[${#authorization.expression('isAuthenticated()')}]];
+
+        function showFavoriteModal() {
+            document.getElementById('favoriteModal').style.display = 'flex';
+        }
+        function closeFavoriteModal() {
+            document.getElementById('favoriteModal').style.display = 'none';
+        }
+        function handleFavorite(bookId) {
+            if (window.userLoggedIn) {
+                fetch('/books/' + bookId + '/favorite', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => {
+                    if (res.status === 200) {
+                        showFavoriteModal();
+                    } else if (res.status === 401) {
+                        window.location.href = '/login';
+                    }
+                });
+            } else {
+                window.location.href = '/login';
+            }
+        }
+    </script>
+
+    <!-- 모달 추가 -->
+    <div id="favoriteModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:white;padding:2rem 3rem;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,0.2);font-size:1.2rem;">
+            <span>찜이 되었습니다!</span>
+            <button onclick="closeFavoriteModal()" style="margin-left:2rem;padding:0.3rem 1rem;">확인</button>
         </div>
     </div>
 </body>
