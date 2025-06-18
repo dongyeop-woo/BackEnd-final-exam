@@ -2,6 +2,7 @@ package com.book.book.service;
 
 import com.book.book.dto.BookDTO;
 import com.book.book.entity.Book;
+import com.book.book.exception.BookNotFoundException;
 import com.book.book.mapper.BookMapper;
 import com.book.book.repository.StoreRepository;
 import com.book.book.enums.BookBest;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -35,39 +36,32 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional(readOnly = true)
     public List<Book> findBestsellerBooks() {
-        return findAll().stream()
-                .filter(book -> book.getBookBest() == BookBest.YES)
-                .collect(Collectors.toList());
+        return storeRepository.findByBookBest(BookBest.YES);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<String> findAllCategories() {
-        return findAll().stream()
-                .map(Book::getCategory)
-                .distinct()
-                .collect(Collectors.toList());
+        return storeRepository.findDistinctCategories();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Book> findBooksByCategory(String category) {
-        return findAll().stream()
-                .filter(book -> category.equals(book.getCategory()))
-                .collect(Collectors.toList());
+        if (category == null || category.isBlank()) return List.of();
+        return storeRepository.findByCategory(category);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Book> searchBooks(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return List.of();
-        }
-        
-        return findAll().stream()
-                .filter(book -> book.getName().contains(keyword) || 
-                              book.getAuthor().contains(keyword) ||
-                              book.getCategory().contains(keyword))
-                .collect(Collectors.toList());
+        if (keyword == null || keyword.isBlank()) return List.of();
+        return storeRepository.searchBooksByKeyword(keyword);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Book findById(Long id) {
+        return storeRepository.findById(id).orElseThrow(BookNotFoundException::new);
     }
 }
