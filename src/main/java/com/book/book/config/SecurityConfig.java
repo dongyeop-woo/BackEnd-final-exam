@@ -20,6 +20,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
+                        // 관리자 페이지가 없어서 그냥 다 허용
+                        // 만약 있다면 requestMatchers 로 권한 설정 했을듯
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
